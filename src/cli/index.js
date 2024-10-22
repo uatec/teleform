@@ -1,150 +1,102 @@
 #!/usr/bin/env node
 
 const { Command } = require('commander');
-const { spawn } = require('child_process');
+const { startLocalServer, stopLocalServer } = require('./localServer');
+const { startNgrokClient, stopNgrokClient } = require('./ngrokClient');
+const { applyTerraform, detachTerraform } = require('./terraform');
 const chokidar = require('chokidar');
-const ngrok = require('ngrok');
 
 const program = new Command();
 
+let isShuttingDown = false;
+const cwd = `${process.cwd()}/../terraform`;
 
-const detachTerraform = async () => {
-    console.log('Detaching Terraform');
+const handleExit = async () => {
+
+    if (isShuttingDown) return;
+
+    console.log(process.listeners('SIGINT').length);
+    isShuttingDown = true;
+    console.log('Exiting...');
+
     try {
-      const cwd = `${process.cwd()}/../terraform`;
-      await runTerraformApply('', cwd, false);
-      console.log('Terraform detached');
+        await detachTerraform(cwd);
+        stopNgrokClient();
+        stopLocalServer();
+        process.exit(0);
     } catch (error) {
-      console.error(`Error detaching Terraform: ${error.message}`);
+        console.error(`Error during shutdown: ${error.message}`);
+        process.exit(1);
     }
-  };
+};
 
 program
 .command('detach')
 .action(async () => {
-    await detachTerraform();
+    await detachTerraform(cwd);
 });
+
+// Debounce function
+let lastInvocation = 0;
+function debounceAsync(func, wait) {
+
+    return (...args) => {
+        return new Promise((resolve, reject) => {
+            if (Date.now() - lastInvocation > wait) {
+                lastInvocation = Date.now();
+                resolve(func(...args));
+            }
+        });
+    };
+}
+
 
 program
   .command('dev')
   .description('Run the development server and expose it via ngrok')
   .action(async () => {
-    let isShuttingDown = false;
-    let forceExit = false;
-
-   
-
-    const handleExit = async () => {
-      if (isShuttingDown) {
-        console.log('Force exiting...');
-        process.exit(1);
-      }
-
-      isShuttingDown = true;
-      console.log('Exiting...');
-      
-      try {
-        await detachTerraform();
-        process.exit(0);
-      } catch (error) {
-        console.error(`Error detaching Terraform: ${error.message}`);
-        process.exit(1);
-      }
-    };
-
-
     try {
-      // Step 1: Run the local server
-      const server = spawn('node', [`${__dirname}/../local-server/index.js`], { stdio: ['pipe', 'pipe', 'pipe'] });
+        process.on('SIGINT', handleExit);
+        console.log('Starting services...');
+        // Step 1: Run the local server
+        const localPort = await startLocalServer();
+        console.log(`Local server started on port ${localPort}`);
 
-      if (!server) {
-        console.error('Failed to start the server.');
-      }
+        // Step 2: Start ngrok client
+        const publicUrl = await startNgrokClient(localPort);
+        console.log(`ngrok tunnel started at: ${publicUrl}`);
 
-      // Step 2: Retrieve the port the server is listening on
-      let port;
-      server.stdout.on('data', (data) => {
-        const output = data.toString();
-        const match = output.match(/listening on port (\d+)/);
-        if (match) {
-          port = match[1];
-          console.log(`Server is listening on port ${port}`);
-
-          // Step 3: Use ngrok to expose the port publicly
-          (async function() {
-            try {
-              const url = await ngrok.connect(port);
-              console.log(`ngrok URL: ${url}`);
-
-              // Step 4: Run terraform apply with the ngrok URL
-              const cwd = `${process.cwd()}/../terraform`;
-              console.log(`Running terraform apply in ${cwd}`);
-              try {
-                await runTerraformApply(url, cwd, true);
-              } catch (error) {
-                console.error(`Error: ${error.message}`);
-              }
-
-              // Step 5: Watch for changes in the terraform directory
-              chokidar.watch('examples/simple/terraform').on('all', (event, path) => {
-                if ( path.contains('terraform.tfstate') || path.contains('terraform.tfstate.backup') || path.contains('.terraform') || path.contains('zip') ) {
-                    return;
-                }
-                console.log(`File ${path} has changed, reapplying terraform...`);
-                const terraform = spawn('terraform', ['apply', '--auto-approve'], { stdio: 'inherit', cwd: 'examples/simple/terraform' });
-
-                terraform.on('close', (code) => {
-                  if (code === 0) {
-                    console.log('Terraform reapplied successfully');
-                  } else {
-                    console.error(`Terraform reapply failed with code ${code}`);
-                  }
-                });
-              });
-            } catch (ngrokError) {
-              console.error(`ngrok error: ${ngrokError.message}`);
-            }
-          })();
-        }
-      });
-
-      server.stderr.on('data', (data) => {
-        console.error(`Server error: ${data.toString()}`);
-      });
-
-      server.on('close', (code) => {
-        if (code > 0) {
-          console.error(`Local server exited with code ${code}`);
-        }
-      });
+        
+        // Step 3: Apply Terraform
+        console.log('Attaching teleform...');
+        await applyTerraform(cwd, publicUrl);
+        console.log('Terraform applied successfully.');
+        // Step 4: Watch for changes in the terraform directory
+        const watcher = async (event, path) => {
+            console.log(`Detected change in ${path}, applying Terraform...`);
+            applyTerraform(cwd, publicUrl);
+            console.log('Terraform applied successfully.');
+        };
+        chokidar.watch(cwd, {
+            ignored: [
+                /\.terraform/,              // Ignore .terraform directory
+                /terraform\.tfstate$/,      // Ignore terraform.tfstate
+                /terraform\.tfstate\.backup$/, // Ignore terraform.tfstate.backup
+                /terraform\.tfstate\.lock\.info$/, // Ignore .tfstate lock files
+                /.*\.tfplan$/,              // Ignore .tfplan files
+                /terraform\.log$/,          // Ignore terraform.log files
+                /.*\.tfvars$/,              // Ignore .tfvars files (typically used for variable configuration)
+                /.*\.tfvars\.json$/,        // Ignore .tfvars.json files
+                /crash\.log$/,              // Ignore crash.log files (generated on Terraform crash)
+                /.*\.backup$/,              // Ignore any files ending in .backup (e.g., state file backups)
+                /.*\.zip$/,                 // Ignore any zipped files (sometimes used for Terraform bundles)
+                /\.terraform-version$/,     // Ignore .terraform-version file (used by Terraform version managers)
+                /\.terraformrc$/,           // Ignore .terraformrc configuration files (personal configuration)
+            ]
+        }).on('all', debounceAsync(watcher, 1000));
     } catch (error) {
-      console.error(`Error: ${error.message}`);
+        console.error(`Error starting services: ${error.message}`);
     }
   });
 
 program.parse(process.argv);
-
-async function runTerraformApply(url, cwd, attach) {
-  return new Promise((resolve, reject) => {
-    const terraform = spawn('terraform', 
-        ['apply', '--auto-approve'], 
-        { 
-            stdio: 'inherit', 
-            cwd: cwd,
-            env: {
-                ...process.env,
-                // TF_LOG: 'TRACE',
-                TELEFORM: attach,
-                ENDPOINT_URL: url
-            }
-        });
-
-    terraform.on('close', (code) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`Terraform apply failed with code ${code}`));
-      }
-    });
-  });
-}

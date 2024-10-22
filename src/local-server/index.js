@@ -9,8 +9,6 @@ const server = http.createServer(async (req, res) => {
 
     // Construct the path to the handler module
     const handlerPath = path.join(process.cwd(), pathname, 'index.js');
-    console.log(JSON.stringify(req.headers));
-    console.log(`Handler path: ${handlerPath}`);
 
     try {
         // Dynamically import the handler module
@@ -35,7 +33,7 @@ const server = http.createServer(async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5003;
 server.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
 });
