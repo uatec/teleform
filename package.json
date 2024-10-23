@@ -10,5 +10,8 @@
     "test": "npm run test --workspaces"
   },
   "author": "uatec",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
