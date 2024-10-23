@@ -120,15 +120,9 @@ roadmap
 - [ ] align module API with aws_lambda_function
 - [ ] CI/CD
 - [ ] teleform devex - cache-bust the debug_lambda?
-- [ ] resolve path to function from terraform aws_lambda_function parameters, not from the function name
+- [x] resolve path to function from terraform aws_lambda_function parameters, not from the function name
 - [ ] enter vpc
-- [ ] git commit
+- [x] git commit
 - [ ] local-server error handling
 - [ ] client component discovery
-- [ ] ngrok client
-
-detatch order
-server killed - interal server error
-ngrok klled - ngrok error
-env var deployed empty - internal server error
-original binary deployed - FIXED 
+- [x] ngrok client
