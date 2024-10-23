@@ -126,3 +126,9 @@ roadmap
 - [ ] local-server error handling
 - [ ] client component discovery
 - [ ] ngrok client
+
+detatch order
+server killed - interal server error
+ngrok klled - ngrok error
+env var deployed empty - internal server error
+original binary deployed - FIXED 

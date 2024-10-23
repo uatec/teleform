@@ -21,8 +21,11 @@ const handleExit = async () => {
 
     try {
         await detachTerraform(cwd);
+        console.log('Terraform detached.');
         stopNgrokClient();
+        console.log('ngrok stopped.');
         stopLocalServer();
+        console.log('Local server stopped.');
         process.exit(0);
     } catch (error) {
         console.error(`Error during shutdown: ${error.message}`);
@@ -74,8 +77,8 @@ program
         // Step 4: Watch for changes in the terraform directory
         const watcher = async (event, path) => {
             console.log(`Detected change in ${path}, applying Terraform...`);
+            console.log(JSON.stringify({ event, path }));
             applyTerraform(cwd, publicUrl);
-            console.log('Terraform applied successfully.');
         };
         chokidar.watch(cwd, {
             ignored: [
