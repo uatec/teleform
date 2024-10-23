@@ -20,6 +20,7 @@ const handleExit = async () => {
     console.log('Exiting...');
 
     try {
+        console.log('Detaching Terraform...');
         await detachTerraform(cwd);
         console.log('Terraform detached.');
         stopNgrokClient();

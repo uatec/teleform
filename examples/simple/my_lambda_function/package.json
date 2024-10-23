@@ -9,6 +9,6 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "cli": "file:~/Development/github/uatec/teleformjs/src/cli"
+    "cli": "file:~/Development/github/uatec/teleformjs/packages/cli"
   }
 }

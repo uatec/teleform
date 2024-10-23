@@ -36,7 +36,7 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" {
 }
 
 module "lambda_function" {
-  source         = "../../../src/terraform"
+  source         = "../../../packages/terraform"
   lambda_name    = "my_lambda_function"
   lambda_handler = "index.handler"
   lambda_runtime = "nodejs20.x"
