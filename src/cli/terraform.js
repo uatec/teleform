@@ -32,8 +32,11 @@ async function applyTerraform(cwd, publicUrl) {
     }
     running = true;
     invocationCount = 0;
-    await innerApplyTerraform(cwd, publicUrl);
-    running = false;
+    try {
+        await innerApplyTerraform(cwd, publicUrl);
+    } finally {
+        running = false;
+    }
 }
 
 

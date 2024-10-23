@@ -115,8 +115,8 @@ roadmap
 - [x] local server
 - [x] total set up script
 - [ ] put temp zip files in to temp directory
-- [ ] wire up env vars
-- [ ] wire up other parameters
+- [x] wire up env vars
+- [x] wire up other parameters
 - [ ] align module API with aws_lambda_function
 - [ ] CI/CD
 - [ ] teleform devex - cache-bust the debug_lambda?
@@ -126,3 +126,5 @@ roadmap
 - [ ] local-server error handling
 - [ ] client component discovery
 - [x] ngrok client
+- [ ] clean up processes (local server)
+- [ ] secure public endpoint

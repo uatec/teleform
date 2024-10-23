@@ -78,7 +78,10 @@ program
         const watcher = async (event, path) => {
             console.log(`Detected change in ${path}, applying Terraform...`);
             console.log(JSON.stringify({ event, path }));
-            applyTerraform(cwd, publicUrl);
+            try {
+                await applyTerraform(cwd, publicUrl);
+            } catch (error) {
+            }
         };
         chokidar.watch(cwd, {
             ignored: [
@@ -99,6 +102,7 @@ program
         }).on('all', debounceAsync(watcher, 1000));
     } catch (error) {
         console.error(`Error starting services: ${error.message}`);
+        await handleExit();
     }
   });
 

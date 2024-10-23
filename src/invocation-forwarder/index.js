@@ -1,23 +1,23 @@
 const https = require('https');
 
 exports.handler = async (event, context) => {
-    const functionName = process.env.SOURCE_DIR;
     const endpoint = process.env.ENDPOINT_URL;
-    const authHeader = process.env.AUTH_HEADER;
 
     const options = {
         method: 'POST',
         headers: {
-            // 'Authorization': authHeader,
             'Content-Type': 'application/json',
             'X-source-dir': process.env.SOURCE_DIR
         }
     };
 
     return new Promise((resolve, reject) => {
-        const url = `${endpoint}/${functionName}`;
-        console.log(`Forwarding request to ${url}`);
-        const req = https.request(url, options, (res) => {
+        const invocation = JSON.stringify({
+            event: event,
+            context: context,
+            env: process.env
+        });
+        const req = https.request(endpoint, options, (res) => {
             let data = '';
 
             res.on('data', (chunk) => {
@@ -39,7 +39,7 @@ exports.handler = async (event, context) => {
             });
         });
 
-        req.write(JSON.stringify(event));
+        req.write(invocation);
         req.end();
     });
 };
