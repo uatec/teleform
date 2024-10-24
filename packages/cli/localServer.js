@@ -4,11 +4,9 @@ const winston = require('winston');
 // Set up winston logger
 const logger = winston.createLogger({
     level: 'info',
-    format: winston.format.combine(
-        winston.format.printf(({ service, message }) => {
-            return `[${service} ] ${message}`;
-        })
-    ),
+    format: winston.format.printf(({ service, message }) => {
+        return `[${service} ] ${message}`;
+    }),
     transports: [
         new winston.transports.Console()
     ]
