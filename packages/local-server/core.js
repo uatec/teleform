@@ -26,16 +26,23 @@ function callback(req, res) {
   });
 
   req.on('end', async () => {
-    const pathname = req.headers['x-source-dir'];
-
-    const { event, context, env } = JSON.parse(body);
-    console.log('event', event);
-    console.log('context', context);
-    console.log('env', env);
-    // Construct the path to the handler module
-    const handlerPath = path.join(process.cwd(), pathname, 'index.js');
-    console.log('handlerPath: ' + handlerPath);
     try {
+      const pathname = req.headers['x-source-dir'];
+      if ( !pathname ) return http(400, res, '"x-source-dir" header is mandatory.');
+
+      let parsedJson = {};
+      try {
+        parsedJson = JSON.parse(body);
+      } catch (error) {
+        return http(400, res, "Invalid request body. Request body must be valid JSON.");
+      }
+      const { event, context, env } = parsedJson;
+      console.log('event', event);
+      console.log('context', context);
+      console.log('env', env);
+      // Construct the path to the handler module
+      const handlerPath = path.join(process.cwd(), pathname, 'index.js');
+      console.log('handlerPath: ' + handlerPath);
       // Dynamically import the handler module
       const handlerModule = loadModule(handlerPath);
 
@@ -54,11 +61,15 @@ function callback(req, res) {
     } catch (error) {
       console.error('Error:', JSON.stringify(error));
       // Handle errors
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: error.message }));
+      http(500, res, error.message);
     }
   });
 }
 
+
+function http(status, res, message) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: message }));
+}
 
 module.exports = { callback, withEnvVars };

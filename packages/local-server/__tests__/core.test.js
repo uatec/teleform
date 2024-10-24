@@ -28,6 +28,8 @@ describe('withEnvVars', () => {
 describe('callback', () => {
     let req, res;
 
+    let handlerSpy = jest.fn();
+
     beforeEach(() => {
         req = new http.IncomingMessage();
         res = new http.ServerResponse(req);
@@ -44,14 +46,12 @@ describe('callback', () => {
 
         res.writeHead = jest.fn();
         res.end = jest.fn();
+
+        loadModule.mockImplementation(() => { return { handler: handlerSpy }; });
     });
 
     it('should handle a valid request and return the expected response', async () => {
-        jest.setTimeout(500);
-
-        let handlerSpy = jest.fn();
         handlerSpy.mockReturnValue({ statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: { message: 'success' } });
-        loadModule.mockImplementation(() => { return { handler: handlerSpy}; });
 
         await callback(req, res);
 
@@ -59,60 +59,50 @@ describe('callback', () => {
         expect(handlerSpy).toHaveBeenCalledWith('testEvent', 'testContext');
         expect(res.writeHead).toHaveBeenCalledWith(200, { 'Content-Type': 'application/json' });
         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ message: 'success' }));
+    });
 
-    }, 500);
+    it('should handle errors when the handler function is not found', async () => {
+        loadModule.mockImplementation(() => { throw new Error('Handler module not found'); });
 
-    //     it('should handle errors when the handler function is not found', async () => {
-    //         jest.isolateModules(() => {
-    //             jest.mock('/test-dir/index.js', () => ({}), { virtual: true });
+        await callback(req, res);
 
-    //         path.join.mockReturnValue('/test-dir/index.js');
+        expect(res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Handler module not found' }));
+    });
 
-    //         await callback(req, res);
+    it('should handle errors when the handler function throws an error', async () => {
 
-    //         expect(res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
-    //         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Handler function not found' }));
-    //         });
-    //     });
+        handlerSpy.mockImplementation(() => { throw new Error('Handler error'); });
 
-    //     it('should handle errors when the handler function throws an error', async () => {
-    //         jest.isolateModules(() => {
-    //             jest.mock('/test-dir/index.js', () => ({
-    //             handler: jest.fn().mockRejectedValue(new Error('Handler error')),
-    //             }), { virtual: true });
+        await callback(req, res);
 
-    //         path.join.mockReturnValue('/test-dir/index.js');
+        expect(handlerSpy).toHaveBeenCalledWith('testEvent', 'testContext');
+        expect(res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Handler error' }));
+    });
 
-    //         await callback(req, res);
+    it('should handle invalid JSON in request body', async () => {
+        req.on = jest.fn((event, handler) => {
+            if (event === 'data') {
+                handler('xxx');
+            }
+            if (event === 'end') {
+                handler();
+            }
+        });
 
-    //         expect(handlerModule.handler).toHaveBeenCalledWith('testEvent', 'testContext');
-    //         expect(res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
-    //         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Handler error' }));
-    //         });
-    //     });
+        await callback(req, res);
 
-    //     it('should handle invalid JSON in request body', async () => {
-    //         req.on = jest.fn((event, handler) => {
-    //             if (event === 'data') {
-    //                 handler('invalid JSON');
-    //             }
-    //             if (event === 'end') {
-    //                 handler();
-    //             }
-    //         });
+        expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Invalid request body. Request body must be valid JSON.' }));
+    });
 
-    //         await callback(req, res);
+    it('should handle missing x-source-dir header', async () => {
+        req.headers = {};
 
-    //         expect(res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
-    //         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Unexpected token i in JSON at position 0' }));
-    //     });
+        await callback(req, res);
 
-    //     it('should handle missing x-source-dir header', async () => {
-    //         req.headers = {};
-
-    //         await callback(req, res);
-
-    //         expect(res.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
-    //         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Cannot read properties of undefined (reading \'split\')' }));
-    //     });
+        expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: '"x-source-dir" header is mandatory.' }));
+    });
 });
