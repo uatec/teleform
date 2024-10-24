@@ -110,14 +110,14 @@ jobs:
 
       - name: Publish CLI package
         run: |
-          cd packages/cli
-          npm publish
+          cd packages/teleform-cli
+          npm publish --registry=https://npm.pkg.github.com/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Local Server package
         run: |
           cd packages/local-server
-          npm publish
+          npm publish --registry=https://npm.pkg.github.com/
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
