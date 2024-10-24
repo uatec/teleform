@@ -128,12 +128,9 @@ output "api_gateway_api_key" {
   sensitive = true
 }
 
-output "api_gateway_url" {
-  value = "${aws_api_gateway_deployment.my_deployment.invoke_url}/myresource"
-}
 
 output "curl_command" {
-  value     = "curl -H 'x-api-key: ${aws_api_gateway_api_key.api_key.value}' ${aws_api_gateway_deployment.my_deployment.invoke_url}/myresource"
+  value     = "curl -H 'x-api-key: ${aws_api_gateway_api_key.api_key.value}' ${aws_api_gateway_deployment.my_deployment.invoke_url}/${aws_api_gateway_stage.my_stage.stage_name}${aws_api_gateway_resource.my_resource.path_part}"  
   sensitive = true
 }
 
