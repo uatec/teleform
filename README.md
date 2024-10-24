@@ -108,23 +108,29 @@ We welcome contributions to improve Teleform.js! If you find a bug or have a fea
 Teleform.js is licensed under the MIT License. See the LICENSE file for more information.
 
 
-roadmap
+## Roadmap
 
+### Phase 0 - something that works
 - [x] intercepter terraform
 - [x] invocation forwarder
 - [x] local server
 - [x] total set up script
-- [ ] put temp zip files in to temp directory
 - [x] wire up env vars
 - [x] wire up other parameters
-- [ ] align module API with aws_lambda_function
-- [ ] CI/CD
-- [ ] teleform devex - cache-bust the debug_lambda?
 - [x] resolve path to function from terraform aws_lambda_function parameters, not from the function name
-- [ ] enter vpc
 - [x] git commit
-- [ ] local-server error handling
-- [ ] client component discovery
 - [x] ngrok client
-- [ ] clean up processes (local server)
+- [ ] CI/CD
+
+### Phase 1 - Something that people can use
+
+- [ ] align module API with aws_lambda_function
 - [ ] secure public endpoint
+- [ ] clean up processes (local server)
+- [ ] client component discovery
+
+### Phase 😕
+
+- [ ] teleform devex - cache-bust the debug_lambda?
+- [ ] enter vpc
+- [ ] local-server error handling
