@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "dev": "teleform-cli dev"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "cli": "file:~/Development/github/uatec/teleformjs/packages/cli"
+    "teleform-cli": "file:../../../packages/teleform-cli"
   }
 }

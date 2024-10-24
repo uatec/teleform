@@ -1,9 +1,9 @@
 {
-  "name": "cli",
+  "name": "teleform-cli",
   "version": "1.0.0",
   "main": "index.js",
   "bin": {
-    "cli": "index.js"
+    "teleform-cli": "index.js"
   },
   "scripts": {
     "test": "jest"

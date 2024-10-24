@@ -34,8 +34,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            packages/cli/node_modules
-          key: ${{ runner.os }}-cli-${{ hashFiles('packages/cli/package-lock.json') }}
+            packages/teleform-cli/node_modules
+          key: ${{ runner.os }}-cli-${{ hashFiles('packages/teleform-cli/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-cli-
 
