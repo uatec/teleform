@@ -1,6 +1,6 @@
 {
   "name": "teleformjs",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A seamless local development experience for Terraform based AWS Lambda deployments.",
   "main": "index.js",
   "workspaces": [
