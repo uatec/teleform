@@ -54,7 +54,7 @@ jobs:
       - name: Run tests
         run: npm test
 
-  bump-version:
+  create-release:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/master'
@@ -77,16 +77,9 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           npm version patch -m "ci: bump version to %s"
           git push --follow-tags
+          echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  create-release:
-    runs-on: ubuntu-latest
-    needs: bump-version
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Create GitHub Release
         id: create_release
@@ -94,8 +87,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          release_name: Release v${{ env.PACKAGE_VERSION }}
           draft: false
           prerelease: false
 
