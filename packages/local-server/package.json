@@ -1,11 +1,18 @@
 {
-  "name": "local-server",
+  "name": "@uatec/local-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.js",    
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uatec/teleform.git"
+  },
   "scripts": {
     "test": "jest"
   },
-  "author": "",
+  "author": "uatec",
   "license": "ISC",
   "description": ""
 }
