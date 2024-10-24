@@ -1,9 +1,12 @@
 {
-  "name": "teleform-cli",
+  "name": "@uatec/teleform-cli",
   "version": "1.0.0",
   "main": "index.js",
   "bin": {
     "teleform-cli": "index.js"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
     "test": "jest"
