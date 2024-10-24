@@ -29,6 +29,7 @@ class Core {
             process.exit(0);
         } catch (error) {
             console.error(`Error during shutdown: ${error.message}`);
+            console.error('Stack:', error.stack);
             stopNgrokClient();
             stopLocalServer();
             process.exit(1);
