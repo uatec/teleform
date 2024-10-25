@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "teleform-cli": "file:../../../packages/teleform-cli"
+    "@uatec/teleform-cli": "1.0.0",
+    "@uatec/local-server": "1.0.0"
   }
 }
