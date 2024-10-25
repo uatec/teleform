@@ -71,7 +71,12 @@ Now, any invocation of your Lambda function in AWS will be routed through to you
 ## How It Works
 1. **Proxy Deployment**: Teleform.js deploys a proxy Lambda that intercepts invocation requests, forwarding them to your local machine via ngrok.
 1. **Ngrok Tunnel**: Ngrok creates a secure tunnel between AWS and your local environment.
-1. **Local Invocation**: The Lambda invocation is handled locally, where your function is executed from your file system for debugging.
+1. **Local Invocation**: The Lambda invocation is handled locally, where your function is 
+executed from your file system for debugging.
+
+## Examples
+
+A working example project can be found in `examples/simple`.
 
 ## Contributing
 We welcome contributions to improve Teleform.js! If you find a bug or have a feature request, feel free to open an issue or submit a pull request.
