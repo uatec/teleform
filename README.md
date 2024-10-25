@@ -36,7 +36,7 @@ Modify your existing Terraform AWS Lambda resource to use Teleform.js as a wrapp
 
 ```hcl
 module "my_function" {
-  source       = "git::ssh://github.com/uatec/teleformjs.git//packages/terraform"
+  source       = "git::ssh://git@github.com/uatec/teleform.git//packages/terraform"
   name         = "my-lambda"
   handler      = "index.handler"
   runtime      = "nodejs20.x"
@@ -108,10 +108,11 @@ Teleform.js is licensed under the MIT License. See the LICENSE file for more inf
 
 ### Phase 1 - Something that people can use
 
+- [ ] client component discovery
+- [ ] remove any hardcoded paths
 - [ ] align module API with aws_lambda_function
 - [ ] secure public endpoint
 - [ ] clean up processes (local server)
-- [ ] client component discovery
 
 ### Phase 😕
 

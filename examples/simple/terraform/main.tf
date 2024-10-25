@@ -2,15 +2,14 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-# variable "teleform" {
-#   type    = bool
-#   default = false
-# }
-
-# variable "proxy_endpoint" {
-#   type    = string
-#   default = ""
-# }
+module "lambda_function" {
+  source         = "git::ssh://git@github.com/uatec/teleform.git//packages/terraform"
+  lambda_name    = "my_lambda_function"
+  lambda_handler = "index.handler"
+  lambda_runtime = "nodejs20.x"
+  lambda_role    = aws_iam_role.lambda_role.arn
+  lambda_source_dir = "../my_lambda_function"
+}
 
 resource "aws_iam_role" "lambda_role" {
   name = "lambda_execution_role"
@@ -33,19 +32,6 @@ resource "aws_iam_role" "lambda_role" {
 resource "aws_iam_role_policy_attachment" "lambda_policy" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-module "lambda_function" {
-  source         = "../../../packages/terraform"
-  lambda_name    = "my_lambda_function"
-  lambda_handler = "index.handler"
-  lambda_runtime = "nodejs20.x"
-  lambda_role    = aws_iam_role.lambda_role.arn
-  lambda_source_dir = "../my_lambda_function"
-#   debug_mode     = false
-
-#   endpoint_url = var.proxy_endpoint
-#   auth_header  = "Bearer 123"
 }
 
 resource "aws_lambda_permission" "apigw_lambda" {
