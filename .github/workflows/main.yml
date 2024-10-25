@@ -50,7 +50,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           npm version patch -ws -m "ci: bump version to %s"
           git push --follow-tags
-          echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=$(node -p "require('./packages/teleform-cli/package.json').version")" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
