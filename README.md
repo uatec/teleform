@@ -1,8 +1,8 @@
-# Teleform.js
+# Teleform
 
 ## Develop Locally. Deploy Globally. Debug Effortlessly.
 
-**Teleform.js** is a Terraform-native tool designed to revolutionise the way you develop and debug AWS Lambda functions. By providing a transparent wrapper around the AWS Lambda resource in Terraform, Teleform.js enables you to run and debug Lambda functions directly on your local machine while interacting with live AWS infrastructure.
+**Teleform** is a Terraform-native tool designed to revolutionise the way you develop and debug AWS Lambda functions. By providing a transparent wrapper around the AWS Lambda resource in Terraform, Teleform enables you to run and debug Lambda functions directly on your local machine while interacting with live AWS infrastructure.
 
 ## Key Features
 
@@ -24,15 +24,15 @@
 
 ## Installation
 
-To get started with Teleform.js, you'll need to add the tool to your existing Terraform configuration.
+To get started with Teleform, you'll need to add the tool to your existing Terraform configuration.
 
 ```bash
 npm install @uatec/teleform-cli
 ```
 
 ## Usage
-### Step 1: Wrap Your Lambda in Teleform.js
-Modify your existing Terraform AWS Lambda resource to use Teleform.js as a wrapper.
+### Step 1: Wrap Your Lambda in Teleform
+Modify your existing Terraform AWS Lambda resource to use Teleform as a wrapper.
 
 ```hcl
 module "my_function" {
@@ -69,7 +69,7 @@ This will re-deploy your terraform, but replace your lambda functions with a pro
 Now, any invocation of your Lambda function in AWS will be routed through to your local machine, allowing you to step through and debug your code in real time.
 
 ## How It Works
-1. **Proxy Deployment**: Teleform.js deploys a proxy Lambda that intercepts invocation requests, forwarding them to your local machine via ngrok.
+1. **Proxy Deployment**: Teleform deploys a proxy Lambda that intercepts invocation requests, forwarding them to your local machine via ngrok.
 1. **Ngrok Tunnel**: Ngrok creates a secure tunnel between AWS and your local environment.
 1. **Local Invocation**: The Lambda invocation is handled locally, where your function is 
 executed from your file system for debugging.
@@ -79,7 +79,7 @@ executed from your file system for debugging.
 A working example project can be found in `examples/simple`.
 
 ## Contributing
-We welcome contributions to improve Teleform.js! If you find a bug or have a feature request, feel free to open an issue or submit a pull request.
+We welcome contributions to improve Teleform! If you find a bug or have a feature request, feel free to open an issue or submit a pull request.
 
 ### Steps to Contribute:
 1. Fork this repository.
@@ -90,7 +90,7 @@ We welcome contributions to improve Teleform.js! If you find a bug or have a fea
 1. Open a pull request.
 
 ## License
-Teleform.js is licensed under the MIT License. See the LICENSE file for more information.
+Teleform is licensed under the MIT License. See the LICENSE file for more information.
 
 ## Roadmap
 
