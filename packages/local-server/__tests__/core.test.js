@@ -1,6 +1,6 @@
 const http = require('http');
 const path = require('path');
-const { callback, withEnvVars } = require('../core');
+const { callback, withEnvVars, formatEnvVars, getEventSource } = require('../core');
 const loadModule = require('../loadModule');
 
 jest.mock('http');
@@ -9,6 +9,20 @@ jest.mock('fs', () => ({
 }));
 jest.mock('../loadModule', () => jest.fn());
 
+describe('getEventSource', () => {
+    it('should return the event source', () => {
+        expect(getEventSource({ httpMethod: 'GET', path: '/test' })).toBe('GET /test');
+        expect(getEventSource({ Records: [{ eventSource: 'test' }] })).toBe('test');
+        expect(getEventSource({})).toBe('Unknown');
+    });
+})
+
+describe('formatEnvVars', () => {
+    it('should format environment variables', () => {
+        const env = { TEST_VAR: 'abc' };
+        expect(formatEnvVars(env)).toBe('TEST_VAR=abc');
+    });
+});
 
 describe('withEnvVars', () => {
     it('should temporarily set environment variables and restore them after execution', () => {
