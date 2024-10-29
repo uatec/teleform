@@ -40,7 +40,6 @@ const startLocalServer = () => {
             const match = output.match(/listening on port (\d+)/);
             if (match) {
                 const port = match[1];
-                logger.info(`Server is listening on port ${port}`, { service });
                 resolve(port);
             }
         });

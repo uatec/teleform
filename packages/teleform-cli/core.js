@@ -59,7 +59,6 @@ class Core {
         console.log('Starting services...');
         // Step 1: Run the local server
         const localPort = await startLocalServer();
-        console.log(`Local server started on port ${localPort}`);
 
         // Step 2: Start ngrok client
         const publicUrl = await startNgrokClient(localPort);
