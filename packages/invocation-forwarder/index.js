@@ -35,7 +35,7 @@ exports.handler = async (event, context) => {
         req.on('error', (e) => {
             reject({
                 statusCode: 500,
-                body: `Error: ${e.message}`
+                body: `Error: ${e.message || e || 'Unknown error'}`
             });
         });
 
