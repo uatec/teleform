@@ -51,7 +51,7 @@ describe('callback', () => {
         req.headers = { 'x-source-dir': 'test-dir' };
         req.on = jest.fn(async (event, handler) => {
             if (event === 'data') {
-                await handler(JSON.stringify({ event: 'testEvent', context: 'testContext', env: { TEST_VAR: 'test_value' } }));
+                await handler(JSON.stringify({ event: 'testEvent', context: 'testContext', env: { '_HANDLER': 'index.handler', TEST_VAR: 'test_value' } }));
             }
             if (event === 'end') {
                 await handler();
@@ -84,6 +84,15 @@ describe('callback', () => {
         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Handler module not found' }));
     });
 
+    it('should throw an error when the handler module does not contain the specified function', async () => {
+        loadModule.mockImplementation(() => { return { not_the_handler: 'invalidFunction' }; });
+
+        await callback(req, res);
+
+        expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Handler function \'handler\' not found' }));
+    });
+
     it('should handle errors when the handler function throws an error', async () => {
 
         handlerSpy.mockImplementation(() => { throw new Error('Handler error'); });
@@ -111,12 +120,46 @@ describe('callback', () => {
         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Invalid request body. Request body must be valid JSON.' }));
     });
 
-    it('should handle missing x-source-dir header', async () => {
+    it('x-source-dir header is mandatory', async () => {
         req.headers = {};
 
         await callback(req, res);
 
         expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: '"x-source-dir" header is mandatory.' }));
+    });   
+    
+    it('_HANDLER env var is mandatory', async () => {
+
+        req.on = jest.fn(async (event, handler) => {
+            if (event === 'data') {
+                await handler(JSON.stringify({ event: 'testEvent', context: 'testContext', env: { 'NOT_HANDLER': 'index.handler', TEST_VAR: 'test_value' } }));
+            }
+            if (event === 'end') {
+                await handler();
+            }
+        });
+
+        await callback(req, res);
+
+        expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: '_HANDLER environment variable is not set.' }));
+    });
+
+    it('_HANDLER env var must be in two part . separated format', async () => {
+
+        req.on = jest.fn(async (event, handler) => {
+            if (event === 'data') {
+                await handler(JSON.stringify({ event: 'testEvent', context: 'testContext', env: { '_HANDLER': 'indexNOTADOThandler', TEST_VAR: 'test_value' } }));
+            }
+            if (event === 'end') {
+                await handler();
+            }
+        });
+
+        await callback(req, res);
+
+        expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Invalid _HANDLER environment variable.' }));
     });
 });

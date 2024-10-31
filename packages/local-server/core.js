@@ -1,6 +1,10 @@
 const path = require('path');
 const loadModule = require('./loadModule');
 
+
+class RequestError extends Error {
+}
+
 const excludeList = [
   'AWS_LAMBDA_FUNCTION_VERSION',
   'AWS_EXECUTION_ENV',
@@ -79,37 +83,47 @@ function callback(req, res) {
   req.on('end', async () => {
     try {
       // TODO: pull this from the env-vars of the lambda itself.
-      const pathname = req.headers['x-source-dir'];
-      if (!pathname) return http(400, res, '"x-source-dir" header is mandatory.');
+      const sourceDirectory = req.headers['x-source-dir'];
+      if (!sourceDirectory) throw new RequestError('"x-source-dir" header is mandatory.');
 
       let parsedJson = {};
       try {
         parsedJson = JSON.parse(body);
       } catch (error) {
-        return http(400, res, "Invalid request body. Request body must be valid JSON.");
+        throw new RequestError("Invalid request body. Request body must be valid JSON.");
       }
 
-      const handlerPath = path.join(process.cwd(), pathname, 'index.js');
-
       const { event, context, env } = parsedJson;
+      if (env['_HANDLER'] === undefined) {
+        throw new RequestError("_HANDLER environment variable is not set.");
+      }
+      const [handlerPath, functionName] = env['_HANDLER'].split('.');
+      if (handlerPath === undefined || functionName === undefined) {
+        throw new RequestError("Invalid _HANDLER environment variable.");
+      }
+
+      const localHandlerPath = path.join(sourceDirectory, handlerPath) + ".js";
+      const absoluteHandlerPath = path.join(process.cwd(), localHandlerPath);
+
 
       const lambdaName = context.functionName;
       const eventSource = getEventSource(event);
       const envVars = formatEnvVars(env);
-      console.log(`${lambdaName} (${path.join(pathname, 'index.js')}) | Event: ${eventSource} | Env: ${envVars}`);
+      console.log(`${lambdaName} (${localHandlerPath}) | Event: ${eventSource} | Env: ${envVars}`);
 
       // Construct the path to the handler module
 
       // Dynamically import the handler module
-      const handlerModule = loadModule(handlerPath);
+      const handlerModule = loadModule(absoluteHandlerPath);
 
-      if (typeof handlerModule.handler !== 'function') {
-        throw new Error('Handler function not found');
+      const handlerFunction = handlerModule[functionName];
+      if (typeof handlerFunction !== 'function') {
+        throw new RequestError(`Handler function '${functionName}' not found`);
       }
 
 
       // Invoke the handler function
-      const response = await withEnvVars(env, () => handlerModule.handler(event, context));
+      const response = await withEnvVars(env, () => handlerFunction(event, context));
 
       // Set the response headers and status code
       res.writeHead(response.statusCode || 200, response.headers || { 'Content-Type': 'application/json' });
@@ -117,9 +131,13 @@ function callback(req, res) {
       // Send the response body
       res.end(JSON.stringify(response.body));
     } catch (error) {
-      console.error('Error:', JSON.stringify(error));
+      console.error('Error:', JSON.stringify(error || 'Unknown error'));
       // Handle errors
-      http(500, res, error.message);
+      if ( error instanceof RequestError) {
+        http(400, res, error.message);
+      } else {
+        http(500, res, error.message);
+      }
     }
   });
 }
