@@ -28,7 +28,7 @@ resource "aws_lambda_function" "this" {
     variables = {
         SOURCE_DIR = var.lambda_source_dir
         ENDPOINT_URL = local.endpoint_url
-        # AUTH_HEADER = var.auth_header
+        AUTH_TOKEN = local.auth_token
     }
   }
 

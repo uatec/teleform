@@ -23,13 +23,15 @@ describe('Invocation forwarder', () => {
             end: jest.fn()
         };
 
-        https.request.mockImplementation((_, __, callback) => {
+        https.request.mockImplementation((_, options, callback) => {
+            expect(options.headers["Authorization"]).toEqual("Bearer some-auth-token");
             callback(mockResponse);
             return mockRequest;
         });
 
         process.env.ENDPOINT_URL = 'https://example.com';
         process.env.SOURCE_DIR = 'source-dir';
+        process.env.AUTH_TOKEN = 'some-auth-token';
 
         const event = { key: 'value' };
         const context = { functionName: 'testFunction' };
@@ -47,6 +49,10 @@ describe('Invocation forwarder', () => {
             env: process.env
         }));
         expect(mockRequest.end).toHaveBeenCalled();
+    });
+
+    test('should pass the authorization token in the request headers', async () => {
+        
     });
 
     test('should handle request errors', async () => {

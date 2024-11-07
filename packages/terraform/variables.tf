@@ -27,11 +27,12 @@ variable "lambda_source_dir" {
 locals {
   teleform     = data.external.env_vars.result["TELEFORM"] == "" ? var.teleform : data.external.env_vars.result["TELEFORM"]
   endpoint_url = data.external.env_vars.result["ENDPOINT_URL"] == "" ? var.endpoint_url : data.external.env_vars.result["ENDPOINT_URL"]
+  auth_token = sensitive(data.external.env_vars.result["AUTH_TOKEN"] == "" ? var.auth_token : data.external.env_vars.result["AUTH_TOKEN"])
 }
 
 # Use the external data source to capture the TELEFORM and ENDPOINT_URL environment variables
 data "external" "env_vars" {
-  program = ["sh", "-c", "echo '{\"TELEFORM\":\"'$TELEFORM'\", \"ENDPOINT_URL\":\"'$ENDPOINT_URL'\"}'"]
+  program = ["sh", "-c", "echo '{\"TELEFORM\":\"'$TELEFORM'\", \"ENDPOINT_URL\":\"'$ENDPOINT_URL'\", \"AUTH_TOKEN\":\"'$AUTH_TOKEN'\"}'"]
 }
 
 output "teleform" {
@@ -49,8 +50,10 @@ variable "endpoint_url" {
   type        = string
   default = ""
 }
-# variable "auth_header" {
-#   description = "The directory containing the Lambda function code"
-#   type        = string
-#   default = ""
-# }
+
+variable "auth_token" {
+  description = "Token to authorise requests with the local server"
+  type        = string
+  default = ""
+  sensitive = true
+}

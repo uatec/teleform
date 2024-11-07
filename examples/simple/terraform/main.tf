@@ -3,7 +3,8 @@ provider "aws" {
 }
 
 module "lambda_function" {
-  source         = "git::ssh://git@github.com/uatec/teleform.git//packages/terraform"
+  source = "../../../packages/terraform"
+  # source         = "git::ssh://git@github.com/uatec/teleform.git//packages/terraform"
   lambda_name    = "my_lambda_function"
   lambda_handler = "index.handler"
   lambda_runtime = "nodejs20.x"

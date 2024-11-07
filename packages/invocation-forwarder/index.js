@@ -7,7 +7,8 @@ exports.handler = async (event, context) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-source-dir': process.env.SOURCE_DIR
+            'X-source-dir': process.env.SOURCE_DIR,
+            'Authorization': `Bearer ${process.env.AUTH_TOKEN}`
         }
     };
 

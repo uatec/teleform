@@ -5,6 +5,9 @@ const loadModule = require('./loadModule');
 class RequestError extends Error {
 }
 
+class AuthError extends Error {
+}
+
 const excludeList = [
   'AWS_LAMBDA_FUNCTION_VERSION',
   'AWS_EXECUTION_ENV',
@@ -82,9 +85,20 @@ function callback(req, res) {
 
   req.on('end', async () => {
     try {
-      // TODO: pull this from the env-vars of the lambda itself.
+      // TODO: pull this from the env-vars of the lambda itself?
       const sourceDirectory = req.headers['x-source-dir'];
       if (!sourceDirectory) throw new RequestError('"x-source-dir" header is mandatory.');
+
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) throw new AuthError('"Authorization" header is mandatory.');
+
+      const authHeaderParts = authHeader.split(' ')
+      const authType = authHeaderParts[0];
+      const authToken = authHeaderParts[1];
+
+      if (authType != 'Bearer' || authToken !== process.env.AUTH_TOKEN) {
+        throw new AuthError('Invalid authorization token.');
+      }
 
       let parsedJson = {};
       try {
@@ -133,7 +147,9 @@ function callback(req, res) {
     } catch (error) {
       console.error('Error:', JSON.stringify(error || 'Unknown error'));
       // Handle errors
-      if ( error instanceof RequestError) {
+      if ( error instanceof AuthError) {
+        http(401, res, error.message);
+      } else if ( error instanceof RequestError) {
         http(400, res, error.message);
       } else {
         http(500, res, error.message);

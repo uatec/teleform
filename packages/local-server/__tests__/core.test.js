@@ -48,7 +48,11 @@ describe('callback', () => {
         req = new http.IncomingMessage();
         res = new http.ServerResponse(req);
 
-        req.headers = { 'x-source-dir': 'test-dir' };
+        req.headers = { 
+            'x-source-dir': 'test-dir',
+            'authorization': 'Bearer test_token'
+        };
+        process.env.AUTH_TOKEN = 'test_token';
         req.on = jest.fn(async (event, handler) => {
             if (event === 'data') {
                 await handler(JSON.stringify({ event: 'testEvent', context: 'testContext', env: { '_HANDLER': 'index.handler', TEST_VAR: 'test_value' } }));
@@ -127,6 +131,39 @@ describe('callback', () => {
 
         expect(res.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'application/json' });
         expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: '"x-source-dir" header is mandatory.' }));
+    });       
+    
+    it('authorization header is mandatory', async () => {
+        delete req.headers.authorization;
+
+        await callback(req, res);
+
+        expect(res.writeHead).toHaveBeenCalledWith(401, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: '"Authorization" header is mandatory.' }));
+    });   
+
+    it('authorization header is enforced', async () => {
+        req.headers = { 
+            ...req.headers,
+            'authorization': 'Bearer wrong_token'
+        };
+
+        await callback(req, res);
+
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Invalid authorization token.' }));
+        expect(res.writeHead).toHaveBeenCalledWith(401, { 'Content-Type': 'application/json' });
+    });   
+
+    it('authorization must be Bearer auth', async () => {
+        req.headers = { 
+            ...req.headers,
+            'authorization': 'not-bearer wrong_token'
+        };
+
+        await callback(req, res);
+
+        expect(res.writeHead).toHaveBeenCalledWith(401, { 'Content-Type': 'application/json' });
+        expect(res.end).toHaveBeenCalledWith(JSON.stringify({ error: 'Invalid authorization token.' }));
     });   
     
     it('_HANDLER env var is mandatory', async () => {

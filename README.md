@@ -113,9 +113,9 @@ Teleform is licensed under the MIT License. See the LICENSE file for more inform
 - [ ] align module API with aws_lambda_function
 - [ ] secure public endpoint
   - [x] cli
-  - [ ] localserver
-  - [ ] terraform
-  - [ ] invocation forwarder
+  - [x] localserver
+  - [x] terraform
+  - [x] invocation forwarder
 - [ ] clean up processes (local server)
 
 ### Phase 😕
