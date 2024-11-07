@@ -1,12 +1,15 @@
-const Core = require('../core');
+const {Core} = require('../core');
 const { startLocalServer, stopLocalServer } = require('../localServer');
 const { startNgrokClient, stopNgrokClient } = require('../ngrokClient');
 const { applyTerraform, detachTerraform } = require('../terraform');
+const { generateAuthToken } = require('../authToken');
 const chokidar = require('chokidar');
 
 jest.mock('../terraform');
 jest.mock('../ngrokClient');
 jest.mock('../localServer');
+jest.mock('../authToken');
+
 
 describe('handleExit', () => {
     let originalExit;
@@ -114,6 +117,7 @@ describe('core.js - runDev', () => {
     });
 
     test('should start local server, ngrok client, and apply Terraform', async () => {
+        generateAuthToken.mockReturnValue('some-auth-token');
         startLocalServer.mockResolvedValue(3000);
         startNgrokClient.mockResolvedValue('http://localhost:4040');
         applyTerraform.mockResolvedValue();
@@ -122,7 +126,7 @@ describe('core.js - runDev', () => {
 
         expect(startLocalServer).toHaveBeenCalled();
         expect(startNgrokClient).toHaveBeenCalledWith(3000);
-        expect(applyTerraform).toHaveBeenCalledWith(expect.any(String), 'http://localhost:4040');
+        expect(applyTerraform).toHaveBeenCalledWith(expect.any(String), 'http://localhost:4040', 'some-auth-token');
     });
 
     test('should handle errors during service startup', async () => {

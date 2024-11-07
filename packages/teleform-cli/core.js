@@ -2,10 +2,9 @@ const { startLocalServer, stopLocalServer } = require('./localServer');
 const { startNgrokClient, stopNgrokClient } = require('./ngrokClient');
 const { applyTerraform, detachTerraform } = require('./terraform');
 const chokidar = require('chokidar');
-
+const { generateAuthToken } = require('./authToken');
 
 class Core {
-
 
     isShuttingDown = false;
     cwd = `${process.cwd()}/../terraform`;
@@ -54,11 +53,11 @@ class Core {
         };
     }
 
-
     async runDev() {
         console.log('Starting services...');
+        const authToken = generateAuthToken();
         // Step 1: Run the local server
-        const localPort = await startLocalServer();
+        const localPort = await startLocalServer(authToken);
 
         // Step 2: Start ngrok client
         const publicUrl = await startNgrokClient(localPort);
@@ -67,7 +66,7 @@ class Core {
 
         // Step 3: Apply Terraform
         console.log('Attaching teleform...');
-        await applyTerraform(this.cwd, publicUrl);
+        await applyTerraform(this.cwd, publicUrl, authToken);
         console.log('Terraform applied successfully.');
         // Step 4: Watch for changes in the terraform directory
         const watchCallback = async (event, path) => {
@@ -99,4 +98,4 @@ class Core {
     }
 }
 
-module.exports = Core;
+module.exports = { Core };

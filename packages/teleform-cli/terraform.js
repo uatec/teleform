@@ -22,7 +22,7 @@ const logOutput = (data) => {
 
 let invocationCount = 0;
 let running = false;
-async function applyTerraform(cwd, publicUrl) {
+async function applyTerraform(cwd, publicUrl, authToken) {
     if (running) {
         logger.info('Terraform apply already in progress. Skipping.', { service: '🛠️' });
         invocationCount++;
@@ -31,18 +31,22 @@ async function applyTerraform(cwd, publicUrl) {
     running = true;
     invocationCount = 0;
     try {
-        await innerApplyTerraform(cwd, publicUrl);
+        await innerApplyTerraform(cwd, publicUrl, authToken);
     } finally {
         running = false;
     }
 }
 
 
-function innerApplyTerraform(cwd, publicUrl) {
+function innerApplyTerraform(cwd, publicUrl, authToken) {
     return new Promise((resolve, reject) => {
+        if (cwd === undefined) return reject(new Error('cwd is required'));
+        if (publicUrl === undefined) return reject(new Error('publicUrl is required'));
+        if (authToken === undefined) return reject(new Error('authToken is required'));
+
         const terraform = spawn('terraform', ['apply', '-auto-approve'], {
             cwd,
-            env: { ...process.env, TELEFORM: true, ENDPOINT_URL: publicUrl },
+            env: { ...process.env, TELEFORM: true, ENDPOINT_URL: publicUrl, AUTH_TOKEN: authToken },
             detached: true
         });
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { Command } = require('commander');
-const Core = require('./core');
+const { Core } = require('./core');
 const program = new Command();
 
 program

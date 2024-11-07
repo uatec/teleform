@@ -32,13 +32,17 @@ describe('Local Server', () => {
             }
         });
 
-        await expect(startLocalServer()).resolves.toBe(port);
+        await expect(startLocalServer('')).resolves.toBe(port);
+    });
+
+    test('should require authToken', async () => {
+        await expect(startLocalServer()).rejects.toThrow('authToken is required');
     });
 
     test('should reject if the server fails to start', async () => {
         spawn.mockReturnValue(null);
 
-        await expect(startLocalServer()).rejects.toThrow('Failed to start the server.');
+        await expect(startLocalServer('')).rejects.toThrow('Failed to start the server.');
     });
 
     test('should reject if the server emits an error', async () => {
@@ -49,7 +53,7 @@ describe('Local Server', () => {
             }
         });
 
-        await expect(startLocalServer()).rejects.toThrow(errorMessage);
+        await expect(startLocalServer('')).rejects.toThrow(errorMessage);
     });
 
     test('should reject if the server exits with a code', async () => {
@@ -60,7 +64,7 @@ describe('Local Server', () => {
             }
         });
 
-        await expect(startLocalServer()).rejects.toThrow(`Server exited with code ${exitCode} or signal null`);
+        await expect(startLocalServer('')).rejects.toThrow(`Server exited with code ${exitCode} or signal null`);
     });
 
     test('should reject if the server is killed with a signal', async () => {
@@ -71,11 +75,11 @@ describe('Local Server', () => {
             }
         });
 
-        await expect(startLocalServer()).rejects.toThrow(`Server exited with code null or signal ${signal}`);
+        await expect(startLocalServer('')).rejects.toThrow(`Server exited with code null or signal ${signal}`);
     });
 
     test('should stop the server if it is running', () => {
-        startLocalServer();
+        startLocalServer('');
         stopLocalServer();
         expect(mockServer.kill).toHaveBeenCalled();
     });

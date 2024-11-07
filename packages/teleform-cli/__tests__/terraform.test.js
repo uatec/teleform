@@ -37,68 +37,86 @@ describe('Terraform', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
+    
+    describe('applyTerraform', () => {
 
-    test('should apply terraform successfully', async () => {
-        mockProcess.on.mockImplementation((event, callback) => {
-            if (event === 'close') {
-                callback(0);
-            }
+        test('should apply terraform successfully', async () => {
+            mockProcess.on.mockImplementation((event, callback) => {
+                if (event === 'close') {
+                    callback(0);
+                }
+            });
+
+            await expect(applyTerraform('/path/to/cwd', 'http://example.com', 'some-auth-token')).resolves.toBeUndefined();
         });
 
-        await expect(applyTerraform('/path/to/cwd', 'http://example.com')).resolves.toBeUndefined();
+        test('should reject if terraform apply fails', async () => {
+            const exitCode = 1;
+            mockProcess.on.mockImplementation((event, callback) => {
+                if (event === 'close') {
+                    callback(exitCode);
+                }
+            });
+
+            await expect(applyTerraform('/path/to/cwd', 'http://example.com', 'some-auth-token')).rejects.toThrow(`Terraform apply process exited with code ${exitCode}`);
+        });
+
+        test('should reject if terraform apply emits an error', async () => {
+            const errorMessage = 'Terraform error';
+            mockProcess.on.mockImplementation((event, callback) => {
+                if (event === 'error') {
+                    callback(new Error(errorMessage));
+                }
+            });
+
+            await expect(applyTerraform('/path/to/cwd', 'http://example.com', 'some-auth-token')).rejects.toThrow(errorMessage);
+        });
+
+        test('should require valid workingDirectory', async () => {
+            await expect(applyTerraform()).rejects.toThrow('cwd is required');
+        });        
+        
+        test('should require publicUrl', async () => {
+            await expect(applyTerraform('/path/to/cwd')).rejects.toThrow('publicUrl is required');
+        });        
+        
+        test('should require authToken', async () => {
+            await expect(applyTerraform('/path/to/cwd', 'http://example.com')).rejects.toThrow('authToken is required');
+        });
     });
 
-    test('should reject if terraform apply fails', async () => {
-        const exitCode = 1;
-        mockProcess.on.mockImplementation((event, callback) => {
-            if (event === 'close') {
-                callback(exitCode);
-            }
+    describe('detachTerraform', () => {
+
+        test('should detach terraform successfully', async () => {
+            mockProcess.on.mockImplementation((event, callback) => {
+                if (event === 'close') {
+                    callback(0);
+                }
+            });
+
+            await expect(detachTerraform('/path/to/cwd')).resolves.toBeUndefined();
         });
 
-        await expect(applyTerraform('/path/to/cwd', 'http://example.com')).rejects.toThrow(`Terraform apply process exited with code ${exitCode}`);
-    });
+        test('should reject if terraform detach fails', async () => {
+            const exitCode = 1;
+            mockProcess.on.mockImplementation((event, callback) => {
+                if (event === 'close') {
+                    callback(exitCode);
+                }
+            });
 
-    test('should reject if terraform apply emits an error', async () => {
-        const errorMessage = 'Terraform error';
-        mockProcess.on.mockImplementation((event, callback) => {
-            if (event === 'error') {
-                callback(new Error(errorMessage));
-            }
+            await expect(detachTerraform('/path/to/cwd')).rejects.toThrow(`Terraform dettach process exited with code ${exitCode}`);
         });
 
-        await expect(applyTerraform('/path/to/cwd', 'http://example.com')).rejects.toThrow(errorMessage);
-    });
+        test('should reject if terraform detach emits an error', async () => {
+            const errorMessage = 'Terraform error';
+            mockProcess.on.mockImplementation((event, callback) => {
+                if (event === 'error') {
+                    callback(new Error(errorMessage));
+                }
+            });
 
-    test('should detach terraform successfully', async () => {
-        mockProcess.on.mockImplementation((event, callback) => {
-            if (event === 'close') {
-                callback(0);
-            }
+            await expect(detachTerraform('/path/to/cwd')).rejects.toThrow(errorMessage);
         });
-
-        await expect(detachTerraform('/path/to/cwd')).resolves.toBeUndefined();
-    });
-
-    test('should reject if terraform detach fails', async () => {
-        const exitCode = 1;
-        mockProcess.on.mockImplementation((event, callback) => {
-            if (event === 'close') {
-                callback(exitCode);
-            }
-        });
-
-        await expect(detachTerraform('/path/to/cwd')).rejects.toThrow(`Terraform dettach process exited with code ${exitCode}`);
-    });
-
-    test('should reject if terraform detach emits an error', async () => {
-        const errorMessage = 'Terraform error';
-        mockProcess.on.mockImplementation((event, callback) => {
-            if (event === 'error') {
-                callback(new Error(errorMessage));
-            }
-        });
-
-        await expect(detachTerraform('/path/to/cwd')).rejects.toThrow(errorMessage);
     });
 });

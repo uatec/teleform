@@ -108,10 +108,14 @@ Teleform is licensed under the MIT License. See the LICENSE file for more inform
 
 ### Phase 1 - Something that people can use
 
-- [ ] client component discovery
+- [x] client component discovery
 - [ ] remove any hardcoded paths
 - [ ] align module API with aws_lambda_function
 - [ ] secure public endpoint
+  - [x] cli
+  - [ ] localserver
+  - [ ] terraform
+  - [ ] invocation forwarder
 - [ ] clean up processes (local server)
 
 ### Phase 😕

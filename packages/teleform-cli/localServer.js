@@ -24,9 +24,14 @@ const logOutput = (data) => {
 
 let server;
 
-const startLocalServer = () => {
+const startLocalServer = (authToken) => {
     return new Promise((resolve, reject) => {
-        server = spawn('node', [`${__dirname}/../local-server/index.js`], { stdio: ['pipe', 'pipe', 'pipe'], detached: true });
+        if (authToken === undefined) {
+            logger.error('authToken is required', { service });
+            return reject(new Error('authToken is required'));
+        }
+
+        server = spawn('node', [`${__dirname}/../local-server/index.js`, authToken], { stdio: ['pipe', 'pipe', 'pipe'], detached: true });
 
         if (!server) {
             logger.error('Failed to start the server.', { service });
