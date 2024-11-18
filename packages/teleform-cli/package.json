@@ -22,6 +22,6 @@
     "chokidar": "^4.0.1",
     "commander": "^12.1.0",
     "ngrok": "^5.0.0-beta.2",
-    "winston": "^3.16.0"
+    "winston": "^3.17.0"
   }
 }
