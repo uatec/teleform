@@ -19,7 +19,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "chokidar": "^4.0.1",
+    "chokidar": "^4.0.2",
     "commander": "^12.1.0",
     "ngrok": "^5.0.0-beta.2",
     "winston": "^3.17.0"
