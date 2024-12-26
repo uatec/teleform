@@ -1,6 +1,6 @@
 {
   "name": "@uatec/teleform-cli",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "index.js",
   "bin": {
     "teleform-cli": "index.js"

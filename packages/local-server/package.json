@@ -1,6 +1,6 @@
 {
   "name": "@uatec/local-server",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "index.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
